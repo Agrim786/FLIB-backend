@@ -1,3 +1,11 @@
+import fs from 'fs';
+import path from 'path';
+
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+  const tempPath = path.join(__dirname, 'google-creds-temp.json');
+  fs.writeFileSync(tempPath, process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = tempPath;
+}
 const express = require("express");
 const multer = require("multer");
 const vision = require("@google-cloud/vision");
