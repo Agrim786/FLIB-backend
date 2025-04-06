@@ -3,7 +3,7 @@ const fs = require("fs");
 
 
 if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
-  const tempPath = path.resolve('./google-creds-temp.json');
+  const credsPath = path.join(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS);
   fs.writeFileSync(tempPath, process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
   process.env.GOOGLE_APPLICATION_CREDENTIALS = tempPath;
 }
