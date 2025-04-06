@@ -1,12 +1,26 @@
 const path = require("path");
 const fs = require("fs");
 
+const credentialsFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
 
-if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
-  const credsPath = path.join(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS);
-  fs.writeFileSync(tempPath, process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
-  process.env.GOOGLE_APPLICATION_CREDENTIALS = tempPath;
+if (!credentialsFile) {
+  throw new Error("❌ GOOGLE_APPLICATION_CREDENTIALS is missing. Define it in .env or Render Environment.");
 }
+
+const tempPath = path.join(__dirname, credentialsFile);
+
+// If the file doesn't exist, create it from JSON
+if (!fs.existsSync(tempPath)) {
+  if (!credentialsJson) {
+    throw new Error("❌ GOOGLE_APPLICATION_CREDENTIALS_JSON is missing. Required to create credentials file.");
+  }
+  fs.writeFileSync(tempPath, credentialsJson);
+  console.log("✅ Google credentials file created at:", tempPath);
+}
+
+process.env.GOOGLE_APPLICATION_CREDENTIALS = tempPath;
+
 const express = require("express");
 const multer = require("multer");
 const vision = require("@google-cloud/vision");
