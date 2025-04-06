@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 
 if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
   const tempPath = path.join(__dirname, 'google-creds-temp.json');
@@ -11,6 +9,7 @@ const multer = require("multer");
 const vision = require("@google-cloud/vision");
 const fetch = require("node-fetch");
 const path = require("path");
+const fs = require("fs");
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
