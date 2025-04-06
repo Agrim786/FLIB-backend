@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const fetch = require("node-fetch");
+const multer = require("multer");
+const upload = multer();
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
@@ -81,5 +83,64 @@ router.post("/predict-price", async (req, res) => {
     return res.status(500).json({ error: "Failed to predict price", details: err.message });
   }
 });
+
+const fallbackExtract = async (imageBuffer) => {
+  try {
+    // 🧠 Step 1: Convert buffer to base64 string for AI
+    const base64Image = imageBuffer.toString("base64");
+
+    // 🧠 Step 2: Send to Groq or OpenRouter with prompt
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama3-70b-8192",
+        messages: [
+          {
+            role: "user",
+            content: `You're an AI that extracts book info from raw OCR images.
+Given this base64 image, return a JSON with fields:
+- title
+- author
+- subject
+- condition (one of: New, Like New, Good, Acceptable, Condition not clear)
+- summary
+
+Base64 image:
+"""${base64Image}"""`,
+          },
+        ],
+        temperature: 0.3,
+        max_tokens: 400,
+      }),
+    });
+
+    const result = await response.json();
+    const content = result?.choices?.[0]?.message?.content;
+    const match = content.match(/{[\s\S]*}/);
+    if (!match) throw new Error("No valid JSON found");
+
+    return JSON.parse(match[0]);
+  } catch (err) {
+    console.error("❌ fallbackExtract error:", err.message);
+    throw err;
+  }
+};
+
+router.post("/extract-book-details", upload.single('image'), async (req, res) => {
+  try {
+    const imageBuffer = req.file.buffer;
+    // 🔥 Call your fallback AI logic here
+    const bookInfo = await fallbackExtract(imageBuffer); // your own function
+    res.json(bookInfo);
+  } catch (error) {
+    console.error("❌ AI Fallback error:", error);
+    res.status(500).json({ error: "AI fallback failed" });
+  }
+});
+
 
 module.exports = router;
