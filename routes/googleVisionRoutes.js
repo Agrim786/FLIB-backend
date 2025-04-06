@@ -17,8 +17,9 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 const client = new vision.ImageAnnotatorClient({
-  keyFilename: path.join(__dirname, "..", process.env.GOOGLE_APPLICATION_CREDENTIALS),
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
+
 
 router.post("/extract-text", upload.single("image"), async (req, res) => {
   try {
